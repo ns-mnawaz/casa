@@ -15,6 +15,6 @@
 
 ## VARS
 - PRICE (maximum price for apartment to search)
-- ROOMS (minimum number of rooms to search)
+- ROOMS (maximum number of rooms to search)
 - OPEN_AI_KEY (OpenAI API key https://platform.openai.com/api-keys)
 - example (`OPEN_AI_KEY=sk-***rtJu PRICE=900 ROOMS=2 node --trace-warnings start.js`)
