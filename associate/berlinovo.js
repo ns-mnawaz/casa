@@ -5,6 +5,7 @@ import log from '../common/log.js';
 import requests from '../common/requests.js';
 import constant from '../common/constant.js';
 import { submit } from '../common/houses.js';
+import { get } from '../common/message.js';
 
 const berlinovo = {
     ui: 'https://www.berlinovo.de/en/housing/search?w%5B0%5D=warmmiete%3A%28min%3A660%2Cmax%3A860%2Call_min%3A660%2Call_max%3A855%29&w%5B1%5D=wohnungen_zimmer%3A%28min%3A2%2Cmax%3A5%2Call_min%3A1%2Call_max%3A4%29',
@@ -28,12 +29,13 @@ class Berlinovo {
                 const title = $(this).find(".node__content .title .content a").text();
                 const path = berlinovo.basePath + $(this).find(".node__content .title .content a").attr('href');
                 const address = $(this).find(".node__content .features .address").text();
-                const rent = $(this).find(".node__content .features .block-field-blocknodeapartmentfield-total-rent .content .field__item").text() + ' warm';
+                const rent = $(this).find(".node__content .features .block-field-blocknodeapartmentfield-total-rent .content .field__item").text(); // warmmiete
                 const rooms = $(this).find(".node__content .features .block-field-blocknodeapartmentfield-rooms .content .field__item").text();
                 const wbs = $(this).find(".node__content .right .category .block-field-blocknodeapartmentfield-wbs .content .field--name-field-wbs").text();
                 const id = $(this).find("article").attr('data-history-node-id');
+                const date =  new Date().toISOString();
                 if (wbs === '0') {
-                    houses.push({ title, address, rent, path, company, rooms, id });
+                    houses.push({ title, address, rent, path, company, rooms, id, date });
                 }
             });
             return houses;
@@ -49,17 +51,20 @@ class Berlinovo {
      *
      * @param {string} id
      * @param {string} page
+     * @param {house} house
      */
-    static async apply(id, page) {
+    static async apply(id, page, house) {
         log.info('Apply Berlinovo Start', {id, page});
         let failure = false;
         for(const person of requests) {
             let data = new FormData();
+            const msg = await get(house.company, house.rooms, house.rent, house.address, person.lastName, person.job);
+            const message = msg || person.message;
             data.append('anrede', person.salutation_2);
             data.append('name', person.lastName);
             data.append('e_mail_adresse', person.email);
             data.append('telefonnummer', person.phoneNumber);
-            data.append('anmerkungen', person.message);
+            data.append('anmerkungen', message);
             data.append('form_id', `webform_submission_kontaktanfrage_node_${id}_add_form`);
             data.append('op', 'Submit');
 

@@ -4,6 +4,7 @@ import log from '../common/log.js';
 import constant from '../common/constant.js';
 import requests from '../common/requests.js';
 import { submit } from '../common/houses.js';
+import { get } from '../common/message.js';
 
 const degewo = {
     ui: 'https://immosuche.degewo.de/de/search?size=10&page=1&property_type_id=1&categories%5B%5D=1&lat=&lon=&area=&address%5Bstreet%5D=&address%5Bcity%5D=&address%5Bzipcode%5D=&address%5Bdistrict%5D=&address%5Braw%5D=&district=&property_number=&price_switch=true&price_radio=%s-warm&price_from=&price_to=&qm_radio=null&qm_from=&qm_to=&rooms_radio=%s&rooms_from=&rooms_to=&wbs_required=0&order=rent_total_without_vat_asc',
@@ -29,12 +30,13 @@ class Degewo {
             const houses = data.map((house) => {
                 return {
                     title: house.headline,
-                    rent: house.price + ' warm',
+                    rent: house.price, // warmmiete
                     area: String(house.living_space),
                     address: house.street + ' ' + house.street_number + ' ' + house.zipcode + ' ' + house.city,
                     path: degewo.basePath + house.property_path,
                     company: constant.DEGEWO,
                     rooms: house.number_of_rooms,
+                    date: new Date().toISOString(),
                     id: house.original_external_id
                 }
             });
@@ -48,17 +50,20 @@ class Degewo {
     /**
      * apply Degewo
      * @param {string} id 
-     * @param {string} page 
+     * @param {string} page
+     * @param {house} house
      */
-    static async apply(id, page) {
+    static async apply(id, page, house) {
         log.info('Apply Degewo Start', { id, page });
         const requestUrl = 'https://app.wohnungshelden.de/api/applicationFormEndpoint/3.0/form/create-application/6e18d067-8058-4485-99a4-5b659bd8ad01/';
         const url = requestUrl + id;
         let failure = false;
         for(const person of requests) {
+            const msg = await get(house.company, house.rooms, house.rent, house.address, person.lastName, person.job);
+            const message = msg || person.message;
             const data = {
                 publicApplicationCreationTO: {
-                    applicantMessage: person.message,
+                    applicantMessage: message,
                     email: person.email,
                     firstName: person.firstName,
                     lastName: person.lastName,

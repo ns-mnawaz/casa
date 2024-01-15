@@ -5,6 +5,7 @@ import constant from '../common/constant.js';
 import requests from '../common/requests.js';
 import { recordFails, save, searchHome } from '../common/houses.js';
 import exec from '../common/exec.js';
+import { get } from '../common/message.js';
 
 const howoge = {
     api: 'https://www.howoge.de/?type=999&tx_howsite_json_list[action]=immoList',
@@ -35,12 +36,13 @@ class Howoge {
             const houses = data.map((house) => {
                 return {
                     title: house.notice,
-                    rent: String(house.rent)+ ' € warm',
+                    rent: String(house.rent)+ ' €', // warmmiete
                     area: String(house.area),
                     address: house.title,
                     path: howoge.basePath + house.link,
                     company: 'Howoge',
-                    rooms: house.rooms
+                    date: new Date().toISOString(),
+                    rooms: house.rooms,
                 }
             });
             return houses;
@@ -56,16 +58,20 @@ class Howoge {
      *
      * @param {string} id page id
      * @param {string} path page path
+     * @param {house} house
      */
-    static async apply(id, path) {
+    static async apply(id, path, house) {
         log.info({message: 'Apply Howoge Start', path});
-        requests.forEach((person) => {
+        for(const person of requests){
             try {
+                const msg = await get(house.company, house.rooms, house.rent, house.address, person.lastName, person.job);
+                const message = msg || person.message;
+                person.message = message;
                 this._apply(id, path, person)
             } catch(error) {
                 log.info('---- Howoge applied error ', error);
             }
-        });
+        }
         return Promise.resolve(false);
     }
     /**

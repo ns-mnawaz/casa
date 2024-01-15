@@ -28,7 +28,7 @@ class Gesobau {
             const houses = data.map((house) => {
                 return {
                     title: house.raw.title,
-                    rent: String(house.raw.warmmiete_floatS)+ ' € warm',
+                    rent: String(house.raw.warmmiete_floatS)+ ' €', // warmmiete
                     area: String(house.raw.wohnflaeche_floatS),
                     address: house.raw.adresse_stringS,
                     path: gesobau.basePath + house.raw.url,

@@ -1,6 +1,6 @@
 export default {
     price: process.env.PRICE || '1000',
-    rooms: process.env.ROOMS ||'2',
+    rooms: process.env.ROOMS || '3',
     showUI: process.env.SHOW_UI || false,
     maxRooms: '5',
     MAX_RETRY: 3,

@@ -15,28 +15,29 @@ import constant from './constant.js';
  * @param {string} company
  * @param {string} id
  * @param {string} path
+ * @param {House} house
  */
-async function apply(company, id, path) {
+async function apply(company, id, path, house) {
     try {
         switch(company) {
             case constant.DEGEWO: 
-                return await Degewo.apply(id, path);
+                return await Degewo.apply(id, path, house);
             case constant.VONOVIA: 
-                return await Vonovia.apply(id, path);
+                return await Vonovia.apply(id, path, house);
             case constant.ADLER_GROUP: 
-                return await AdlerGroup.apply(id, path);
+                return await AdlerGroup.apply(id, path, house);
             case constant.BERLINOVO: 
-                return await Berlinovo.apply(id, path);
+                return await Berlinovo.apply(id, path, house);
             case constant.GEWOBAG:
-                return await Gewobag.apply(id, path);
+                return await Gewobag.apply(id, path, house);
             case constant.DEUTSCHE:
-                return await Deutsche.apply(id, path);
+                return await Deutsche.apply(id, path, house);
             case constant.HOWOGE:
-                return await Howoge.apply(id, path);
+                return await Howoge.apply(id, path, house);
             case constant.WBM:
-                return await WBM.apply(id, path);
+                return await WBM.apply(id, path, house);
             case constant.STADT_UND_LAND:
-                return await Stadtundland.apply(id, path);
+                return await Stadtundland.apply(id, path, house);
             default:
                 log.warn('Apply not implemented for ', company);
         }

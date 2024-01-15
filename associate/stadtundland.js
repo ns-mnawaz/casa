@@ -9,6 +9,7 @@ import constant from '../common/constant.js';
 import requests from '../common/requests.js';
 import { recordFails, save, searchHome } from '../common/houses.js';
 import exec from '../common/exec.js';
+import { get } from '../common/message.js';
 
 const stadtundland = {
     ui: `https://www.stadtundland.de/immobiliensuche.php?form=stadtundland-expose-search-1.form&sp%3Acategories%5B3352%5D%5B%5D=-&sp%3Acategories%5B3352%5D%5B%5D=__last__&sp%3AroomsFrom%5B%5D=${constant.roomsFrom}&sp%3AroomsTo%5B%5D=%s&sp%3ArentPriceFrom%5B%5D=&sp%3ArentPriceTo%5B%5D=%s&sp%3AareaFrom%5B%5D=&sp%3AareaTo%5B%5D=&sp%3Afeature%5B%5D=__last__&action=submit`,
@@ -37,12 +38,13 @@ class Stadtundland {
                 const title = $(this).find(".SP-Teaser.SP-Teaser--expose article header").text();
                 const address = $(this).find(".SP-Teaser.SP-Teaser--expose article tbody > tr:nth-child(2) > td").text();
                 const rooms = $(this).find(".SP-Teaser.SP-Teaser--expose article tbody > tr:nth-child(3) > td").text();
-                const rent = $(this).find(".SP-Teaser.SP-Teaser--expose article tbody > tr:nth-child(8) > td").text() + ' warm';
+                const rent = $(this).find(".SP-Teaser.SP-Teaser--expose article tbody > tr:nth-child(8) > td").text(); // warmmiete
                 const area = $(this).find(".SP-Teaser.SP-Teaser--expose article tbody > tr:nth-child(4) > td").text();
                 const path = stadtundland.basePath + $(this).find(".SP-Teaser.SP-Teaser--expose article .SP-Teaser__links.SP-LinkList--inline > ul:nth-child(2) > li:nth-child(2) > a").attr('href');
                 const wbs = title.toLowerCase().includes('mit') && title.toLowerCase().includes('wbs');
+                const date = new Date().toISOString();
                 if (!wbs) {
-                    houses.push({ title, address, rent, area, path, company, rooms });
+                    houses.push({ title, address, rent, area, path, company, rooms, date });
                 }
             });
             const _houses = houses.filter((item) => (Number(item.rooms) >= Number(rooms)));
@@ -58,15 +60,18 @@ class Stadtundland {
      *
      * @param {string} path page path 
      */
-    static async apply(id, path) {
+    static async apply(id, path, house) {
         log.info({ message: 'Apply Stadtundland Start', path });
-        requests.forEach((person) => {
+        for(const person of requests){
             try {
+                const msg = await get(house.company, house.rooms, house.rent, house.address, person.lastName, person.job);
+                const message = msg || person.message;
+                person.message = message;
                 this._apply(id, path, person)
             } catch(error) {
                 log.info('---- Stadtundland applied error ', error);
             }
-        });
+        }
         return Promise.resolve(false);
     }
     /**

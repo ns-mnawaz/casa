@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "search": "PRICE=900 ROOMS=2 node start.js",
-    "apply": "PRICE=900 ROOMS=2 node --trace-warnings index.js",
+    "apply": "PRICE=900 ROOMS=2 node --trace-warnings start.js",
     "pm2": "pm2 start start.js",
-    "dev": "node start.js"
+    "dev": "node start.js",
+    "dev_openai": "OPEN_AI_KEY= node start.js"
   },
   "keywords": [],
   "author": "",
@@ -17,6 +17,7 @@
     "cheerio": "^1.0.0-rc.12",
     "node-cron": "^3.0.2",
     "node-notifier": "^10.0.1",
+    "openai": "^4.20.0",
     "pm2": "^5.3.0",
     "proper-lockfile": "^4.1.2",
     "puppeteer": "^21.3.1",

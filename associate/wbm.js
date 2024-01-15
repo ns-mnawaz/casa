@@ -33,7 +33,7 @@ class WBM {
                 const area = $(this).find(".main-property-size").text();
                 const path = wbm.basePath + $(this).find(".btn-holder a").attr('href');
                 const _rooms = $(this).find(".main-property-rooms").text();
-                const rent = $(this).find(".main-property-rent").text().trim() + ' warm';
+                const rent = $(this).find(".main-property-rent").text().trim(); //warmmiete
                 const wbs = $(this).find(".check-property-list").text().trim().toLowerCase().includes('wbs');
                 if(!wbs && title && +_rooms >= rooms) {
                     houses.push({ title, address, rent, path, company, rooms: _rooms, area });

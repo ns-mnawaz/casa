@@ -42,7 +42,7 @@ async function homeApply(houses) {
     houses = houses || [];
     let failures = [];
     for(const house of houses) {
-        const failure = await apply(house.company, house.id, house.path);
+        const failure = await apply(house.company, house.id, house.path, house);
         if(failure) {
             failures.push(house);
         } else {
@@ -153,4 +153,29 @@ async function searchHome(houses, company, fail_history=false) {
     return houses.diff(history, ['title', 'path']);
 }
 
-export { searchSaveApply, submit, searchHome, save, recordFails };
+/**
+ * find home
+ *
+ * @param {string} company
+ * @param {string} path
+ * @param {boolean} fail_history
+ */
+async function findHome(company, path, fail_history=false) {
+    let file_name = date.format(new Date());
+    let file_name2 = date.format(new Date(new Date().setDate(new Date().getDate()-1)));
+    if (company) {
+        file_name = company + constant.SLASH + file_name;
+        file_name2 = company + constant.SLASH + file_name2;
+    }
+    const today = await file.readJson(file_name);
+    const yesterday = await file.readJson(file_name2);
+    let history = [].concat(today, yesterday);
+    if (fail_history) {
+        const failures = await file.readJson(constant.FAILURES + constant.SLASH + date.format(new Date()));
+        history = history.concat(failures);
+    }
+    const pos = history.map( item => item.path).indexOf(path);
+    return pos !== -1 ? history[pos] : false;
+}
+
+export { searchSaveApply, submit, searchHome, save, recordFails, findHome };

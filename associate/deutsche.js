@@ -6,11 +6,12 @@ import puppeteer from 'puppeteer';
 import requests from '../common/requests.js';
 import { recordFails, save, searchHome } from '../common/houses.js';
 import exec from '../common/exec.js';
+import { get } from '../common/message.js';
 
 const deutsche = {
     ui: 'https://www.deutsche-wohnen.com/en/rent/renting-property/rent-an-apartment#page=1&locale=en&commercializationType=rent&utilizationType=flat,retirement&location=Berlin&city=Berlin&price=%s&rooms=%s',
     api: 'https://immo-api.deutsche-wohnen.com/estate/findByFilter',
-    apiData: '{"infrastructure":{},"flatTypes":{},"other":{"requiresQualificationCertificate":false},"page":"1","locale":"en","commercializationType":"rent","utilizationType":"flat,retirement","location":"Berlin","city":"Berlin","price":"%s","rooms":"%s"}',
+    apiData: '{"infrastructure":{},"flatTypes":{},"other":{"requiresQualificationCertificate":false},"page":"1","locale":"en","commercializationType":"rent","utilizationType":"flat","location":"%s","city":"Berlin","price":"%s","rooms":"%s","area":"%s"}',
     basePath: 'https://www.deutsche-wohnen.com/en/expose/object/'
 };
 
@@ -20,19 +21,19 @@ class Deutsche {
      *
      * @returns houses
      */
-    static async search() {
+    static async search(location='Berlin', area='50') {
         try {
             const { price, rooms, showUI } = constant;
             const ui = util.format(deutsche.ui, price, rooms);
             if (showUI) {
                 console.log('Deutsche -----> ', ui);
             }
-            const roomParam = String(+rooms + 0.5);
+            const roomParam = String(+rooms - 0.5);
             const config = {
                 method: 'post',
                 url: deutsche.api,
                 headers: {'content-type': 'application/x-www-form-urlencoded; charset=UTF-8'},
-                data: util.format(deutsche.apiData, price, roomParam)
+                data: util.format(deutsche.apiData, location, price, roomParam, area)
             };
             const response = await axios.request(config);
             let data = response.data || [];
@@ -47,7 +48,8 @@ class Deutsche {
                     company: constant.DEUTSCHE,
                     rooms: house.rooms,
                     date: new Date(house.date),
-                    id: house.id
+                    id: house.id,
+                    date_now: new Date().toISOString(),
                 }
             });
             return houses;
@@ -61,11 +63,16 @@ class Deutsche {
      * apply Deutsche
      *
      * @param {string} path page path 
+     * @param {string} id
+     * @param {house} house
      */
-    static async apply(id, path) {
+    static async apply(id, path, house) {
         console.log('Apply Deutsche Start');
         for(const person of requests) {
             try {
+                const msg = await get(house.company, house.rooms, house.rent, house.address, person.lastName, person.job);
+                const message = msg || person.message;
+                person.message = message;
                 this._apply(id, path, person);
             } catch(error) {
                 log.error('---- Deutsche applied error APPLY_ERROR', error);
